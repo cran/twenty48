@@ -5,7 +5,8 @@
 
 <!-- badges: start -->
 
-[![](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://www.tidyverse.org/lifecycle/#experimental)
+[![](https://www.r-pkg.org/badges/version/twenty48?color=brightgreen)](https://cran.r-project.org/package=twenty48)
+[![](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 [![License:
 MIT](https://img.shields.io/badge/license-MIT-blueviolet.svg)](https://cran.r-project.org/web/licenses/MIT)
 [![R build
@@ -13,40 +14,37 @@ status](https://github.com/rossellhayes/twenty48/workflows/R-CMD-check/badge.svg
 
 <!-- badges: end -->
 
-A clone of [Gabriele
-Cirulli’s 2048](https://github.com/gabrielecirulli/2048) in R.
+A clone of [Gabriele Cirulli’s
+2048](https://github.com/gabrielecirulli/2048) in R.
 
 ## Installation
 
-<!-- You can install the released version of **twenty48** from [CRAN](https://cran.r-project.org/package=twenty48) with: -->
+You can install the released version of **twenty48** from
+[CRAN](https://cran.r-project.org/package=twenty48) with:
 
-<!-- ``` {r eval = FALSE} -->
+``` r
+install.packages("twenty48")
+```
 
-<!-- install.packages("twenty48") -->
-
-<!-- ``` -->
-
-You can install the development version of **twenty48** from
+or the development version from
 [GitHub](https://github.com/rossellhayes/twenty48) with:
 
 ``` r
-# install.packages("remotes")
-remotes::install_github("rossellhayes/twenty48")
+# install.packages("pak")
+pak::pkg_install("rossellhayes/twenty48")
 ```
 
 ## Example
 
 ![Gameplay recording](man/figures/recording.gif)
 
------
+------------------------------------------------------------------------
 
-Hex sticker font is [Source Sans
-Pro](https://github.com/adobe-fonts/source-sans-pro) by
-[Adobe](https://www.adobe.com).
+Hex sticker font is [Source Sans by
+Adobe](https://github.com/adobe-fonts/source-sans).
 
-Recording made with
-[ScreenToGif](https://github.com/NickeManarin/ScreenToGif/) by [Nicke
-Manarin](https://github.com/NickeManarin).
+Recording made with [ScreenToGif by Nicke
+Manarin](https://github.com/NickeManarin/ScreenToGif/).
 
 Please note that **twenty48** is released with a [Contributor Code of
 Conduct](https://contributor-covenant.org/version/2/0/CODE_OF_CONDUCT.html).

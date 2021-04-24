@@ -1,49 +1,67 @@
-twenty48_env <- new.env()
+#' @importFrom R6 R6Class
 
-Twenty48 <- R6::R6Class(
+Twenty48 <- R6Class(
   "Twenty48",
   public = list(
-    grid       = NULL,
-    score      = 0,
-    game_over  = FALSE,
-    initialize = function(size = 4) {
+    grid      = NULL,
+    score     = 0,
+    game_over = FALSE,
+    dynamic   = FALSE,
+    wait      = FALSE,
+
+    initialize = function(size = 4, dynamic = TRUE) {
+      self$set_dynamic(dynamic)
+      self$wait <- isTRUE(requireNamespace("wait", quietly = TRUE))
       private$build_grid(size)
-      self$play()
     },
+
+    set_dynamic = function(dynamic) {
+      if (dynamic && !rstudioapi::isAvailable()) {
+        warning("Dynamic input is only supported in RStudio.", call. = FALSE)
+        self$dynamic <- FALSE
+      }
+
+      self$dynamic <- dynamic
+    },
+
     play = function() {
       print(self)
 
       while (interactive()) {
         if (self$game_over) {
           switch(
-            substr(tolower(readline("> ")), 1, 1),
-            r = private$restart(),
-            q = {cat("\014"); break}
+            substr(input("> "), 1, 1),
+            r = private$ask_restart(),
+            q = quit_game()
           )
         } else {
           switch(
-            tolower(readline("> ")),
+            input(
+              dynamic = self$dynamic,
+              valid   = c("w", "a", "s", "d", "undo", "restart", "quit")
+            ),
             w       = private$act("up"),
             a       = private$act("left"),
             s       = private$act("down"),
             d       = private$act("right"),
-            z       = private$back(),
+            undo    = private$back(),
             restart = private$restart(),
-            quit    = {cat("\014"); break}
+            quit    = quit_game()
           )
         }
 
         print(self)
       }
     },
+
     print = function() {
-      cat("\014")
+      clear_console()
 
       if (!self$game_over) {
         cat(
           crayon::silver(
-            'Move with WASD. Undo a move with "z".',
-            '\nType "quit" to exit or "restart" for a new game.\n'
+            'Move with WASD. Type "undo" to go back one move.',
+            '\nType "quit" to exit, or "restart" for a new game.\n'
           )
         )
         cat(crayon::silver(paste("Score:", self$score, "\n")))
@@ -55,7 +73,9 @@ Twenty48 <- R6::R6Class(
       grid            <- self$grid
       grid[grid == 0] <- "."
       grid[]          <- paste0(" ", grid, " ")
-      grid[]          <- format(grid, justify = "centre")
+      grid[]          <- format(
+        grid, width = max(6, max(nchar(grid))), justify = "centre"
+      )
       grid[]          <- sapply(
         grid,
         function(x) {
@@ -65,14 +85,20 @@ Twenty48 <- R6::R6Class(
       )
 
       for (i in seq_len(nrow(self$grid))) {cat(grid[i, ], "\n", sep = "")}
+
+      if (self$wait) {
+        wait::wait_list(deliver = FALSE)
+      }
     }
   ),
+
   private = list(
     previous_grid  = NULL,
     previous_score = 0,
     new_score      = list(up = 0, down = 0, left = 0, right = 0),
     moves          = list(up = 0, down = 0, left = 0, right = 0),
     previous_moves = list(up = 0, down = 0, left = 0, right = 0),
+
     build_grid = function(size) {
       self$game_over <- FALSE
       self$grid      <- matrix(0, nrow = size, ncol = size)
@@ -85,6 +111,7 @@ Twenty48 <- R6::R6Class(
         right = private$move(self$grid, "right")
       )
     },
+
     back = function() {
       self$grid      <- private$previous_grid
       self$score     <- private$previous_score
@@ -92,6 +119,17 @@ Twenty48 <- R6::R6Class(
       self$game_over <- FALSE
       self
     },
+
+    ask_restart = function() {
+      cat('Are you sure you want to restart? (y/n)\n')
+
+      switch(
+        substr(input("> "), 1, 1),
+        y = private$restart(),
+        n = self
+      )
+    },
+
     restart = function() {
       private$previous_grid  <- self$grid
       private$previous_score <- self$score
@@ -103,6 +141,7 @@ Twenty48 <- R6::R6Class(
 
       self
     },
+
     act = function(direction) {
       if (all(self$grid == private$moves[[direction]])) {return(self)}
 
@@ -132,6 +171,7 @@ Twenty48 <- R6::R6Class(
 
       self
     },
+
     move = function(grid, direction) {
       grid <- private$rotate(
         grid,
@@ -147,6 +187,7 @@ Twenty48 <- R6::R6Class(
 
       grid
     },
+
     combine = function(grid, direction) {
       private$new_score[[direction]] <- self$score
 
@@ -163,6 +204,7 @@ Twenty48 <- R6::R6Class(
 
       grid
     },
+
     slide = function(grid) {
       for (k in 1:nrow(grid) - 1) {
         for (i in seq_len(nrow(grid) - 1)) {
@@ -177,6 +219,7 @@ Twenty48 <- R6::R6Class(
 
       grid
     },
+
     spawn = function(grid) {
       available <- which(grid == 0)
 
@@ -189,6 +232,7 @@ Twenty48 <- R6::R6Class(
       grid[spawn_space] <- sample(c(2, 4), 1, prob = c(7/8, 1/8))
       grid
     },
+
     rotate = function(grid, rotation = c("0", "cw", "180", "ccw")) {
       if (rotation == "0")   {return(grid)}
       if (rotation == "cw")  {return(t(grid)[, ncol(grid):1])}
@@ -196,5 +240,5 @@ Twenty48 <- R6::R6Class(
       if (rotation == "ccw") {return(t(grid)[nrow(grid):1, ])}
       stop("Invalid `rotation`")
     }
-  ),
+  )
 )
