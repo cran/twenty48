@@ -18,7 +18,6 @@ ongoing_game <- function() {
 #' @return Generates an interactive game of 2048 in the console.
 #' @aliases 2048 twenty48
 #' @export
-#' @importFrom R6 R6Class
 #'
 #' @examples
 #' play_2048()
@@ -40,17 +39,10 @@ play_2048 <- function(size = 4, dynamic = rstudioapi::isAvailable()) {
 
   if (length(size) != 1 || !is.numeric(size) || size != size %/% 1) {
     stop("`size` must be a single integer.", call. = FALSE)
+  } else if (is.na(size)) {
+    stop("`size` must not be `NA`.", call. = FALSE)
   } else if (size < 2) {
     stop("`size` must be at least 2.", call. = FALSE)
-  }
-
-  for (i in seq_along(bg)) {
-    do.call(
-      crayon::make_style, c(as.list(bg[i]), list(bg = TRUE, colors = 256))
-    )
-    do.call(
-      crayon::make_style, c(as.list(fg[i]), list(grey = TRUE, colors = 256))
-    )
   }
 
   game_env[["2048"]] <- Twenty48$new(size, dynamic)
@@ -113,6 +105,11 @@ input <- function(prompt = "> ", dynamic = FALSE, valid = NULL) {
 }
 
 clear_console <- function() {
-  if (.Platform$OS.type == "windows") {shell("cls")} else {shell("clear")}
-  return(invisible(NULL))
+  if (rstudioapi::isAvailable()) {
+    # Within the RStudio console, "\f" clears output
+    return(cat("\f"))
+  }
+
+  # In the terminal, "\033c\033[3J" clears output
+  cat("\033c\033[3J")
 }
